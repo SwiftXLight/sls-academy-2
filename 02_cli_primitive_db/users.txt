@@ -1,0 +1,4 @@
+{"name":"John","gender":"Male","age":18}
+{"name":"Jane","gender":"Female","age":20}
+{"name":"Lee","gender":"Male","age":17}
+{"name":"Nedoe","gender":"Male","age":10}
