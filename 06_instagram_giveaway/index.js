@@ -48,28 +48,49 @@ const { Transform } = require('stream');
     return new Promise((resolve, reject) => {
       const filesPath = './files';
       const commonUsernames = new Set();
-
+  
       const filePath = path.join(filesPath, 'out0.txt');
       const usernamesStream = readUsernamesFromFile(filePath);
       usernamesStream.on('data', (username) => {
         commonUsernames.add(username);
       });
       usernamesStream.on('end', () => {
-        for (let i = 1; i < 20; i++) {
-          const filePath = path.join(filesPath, `out${i}.txt`);
+        let processedCount = 0;
+        const totalFiles = 20;
+  
+        const processFile = (index) => {
+          if (index >= totalFiles) {
+            resolve(commonUsernames.size);
+            return;
+          }
+  
+          const filePath = path.join(filesPath, `out${index}.txt`);
           const usernamesStream = readUsernamesFromFile(filePath);
+          const usernamesSet = new Set();
+  
           usernamesStream.on('data', (username) => {
-            if (!commonUsernames.has(username)) {
-              commonUsernames.delete(username);
+            if (commonUsernames.has(username)) {
+              usernamesSet.add(username);
             }
           });
-          usernamesStream.on('end', () => resolve(commonUsernames.size));
+  
+          usernamesStream.on('end', () => {
+            commonUsernames.clear();
+            for (const username of usernamesSet) {
+              commonUsernames.add(username);
+            }
+            processedCount++;
+            processFile(processedCount);
+          });
+  
           usernamesStream.on('error', (error) => reject(error));
-        }
+        };
+  
+        processFile(1);
       });
       usernamesStream.on('error', (error) => reject(error));
     });
-  }
+  }   
 
   function existInAtleastTen() {
     return new Promise((resolve, reject) => {
